@@ -60,8 +60,8 @@ export default function Header() {
                   </NavigationMenu.Link>
 
                   <div className={`absolute left-0 top-full mt-2 w-48 bg-white rounded shadow-md ring-1 ring-black ring-opacity-5 transition-all transform z-50 ${showForms ? 'opacity-100 visible translate-y-0 pointer-events-auto' : 'opacity-0 invisible translate-y-1 pointer-events-none'}`}>
-                    <a href="/src/Formularios/EDAM.html" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">EDAM</a>
-                    <a href="/src/Formularios/Human.html" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">HUMAN</a>
+                    <a href="/Formularios/EDAM.html" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">EDAM</a>
+                    <a href="/Formularios/Human.html" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">HUMAN</a>
                   </div>
                 </div>
               </NavigationMenu.Item>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acta de Entrega AHE - Cruz Roja Colombiana</title>
+    <style>
+        /* Paleta de colores de la Cruz Roja (referencia) */
+        /* Rojo principal: #d90000 */
+        /* Gris institucional: #333333 */
+        
+        /* Estilos Generales y Reset */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 30px; 
+            background-color: #f0f0f0; 
+            color: #333333;
+        }
+        .container { 
+            background-color: #ffffff; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15); 
+            max-width: 950px; 
+            margin: 0 auto; 
+        }
+
+        /* Encabezado Institucional - Estilo Cruz Roja */
+        header { 
+            text-align: center; 
+            margin-bottom: 25px; 
+            padding-bottom: 15px; 
+            border-bottom: 4px solid #d90000; 
+        }
+        header h1 { 
+            color: #d90000; 
+            margin: 5px 0; 
+            font-size: 2em; 
+            font-weight: 800; 
+        }
+        header h2 { 
+            color: #333333; 
+            margin: 0; 
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+        header p {
+            color: #666666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        .logo { 
+            margin-bottom: 15px; 
+            font-size: 3em; 
+            color: #d90000; 
+            font-weight: bold;
+        }
+        .logo::before { content: "➕"; margin-right: 10px; }
+
+
+        /* Estilos de Sección */
+        .section { 
+            margin-bottom: 25px; 
+            padding: 20px; 
+            border: 1px solid #e0e0e0; 
+            border-left: 6px solid #d90000; 
+            border-radius: 8px; 
+            background-color: #fdfdfd; 
+        }
+        .section h3 { 
+            color: #d90000; 
+            margin-top: 0; 
+            padding-bottom: 8px; 
+            border-bottom: 1px dashed #e0e0e0;
+            font-size: 1.2em;
+            font-weight: 700;
+        }
+
+        /* Layout y Campos */
+        .row { display: flex; gap: 25px; margin-bottom: 12px; }
+        .column { flex: 1; min-width: 0; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: #555555; font-size: 0.9em; }
+        input[type="text"], input[type="number"], input[type="date"], input[type="datetime-local"], select, textarea {
+            width: 100%; 
+            padding: 10px 12px; 
+            border: 1px solid #cccccc; 
+            border-radius: 6px; 
+            box-sizing: border-box; 
+            font-size: 0.95em;
+            background-color: #ffffff;
+            transition: border-color 0.2s ease-in-out;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #d90000; 
+            outline: none;
+            box-shadow: 0 0 5px rgba(217, 0, 0, 0.2);
+        }
+        textarea { resize: vertical; min-height: 80px; }
+
+        /* Estilos de Tabla */
+        .delivery-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .delivery-table th, .delivery-table td { 
+            border: 1px solid #e0e0e0; 
+            padding: 12px; 
+            text-align: left;
+            font-size: 0.9em;
+        }
+        .delivery-table th { 
+            background-color: #d90000; 
+            color: white; 
+            text-align: center;
+            font-weight: 700;
+        }
+        .delivery-table tbody tr:nth-child(even) { background-color: #f5f5f5; } 
+        .delivery-table td input[type="number"], .delivery-table td input[type="text"] { width: 90px; margin: 0 auto; display: block; text-align: center; padding: 8px; }
+
+        /* Declaración y Firmas */
+        .declaration { background-color: #ffe6e6; border: 1px solid #ffcccc; margin-top: 30px; }
+        .declaration p { font-size: 0.95em; color: #a10000; font-style: italic; line-height: 1.5; } 
+        .signature-box { 
+            border: 2px dashed #d90000; 
+            height: 90px; 
+            margin-top: 12px; 
+            text-align: center; 
+            line-height: 90px; 
+            background-color: #ffffff; 
+            font-size: 1em; 
+            color: #666; 
+            border-radius: 5px;
+            font-style: italic;
+        }
+        .column.signature-col { 
+            border-right: 1px dashed #e0e0e0; 
+            padding-right: 15px; 
+        }
+        .column.signature-col:last-child { 
+            border-right: none; 
+            padding-left: 15px; 
+            padding-right: 0;
+        }
+
+        /* Notas y Pie de Página */
+        .note { margin-top: 25px; text-align: center; font-size: 0.85em; color: #6c757d; line-height: 1.4; }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">CRUZ ROJA COLOMBIANA</div>
+            <h1>ACTA DE ENTREGA DE ASISTENCIA HUMANITARIA DE EMERGENCIA (AHE)</h1>
+            <h2>Trabajando Juntos por la Humanidad</h2>
+            <p>REFERENCIA: FR-CR-AHE-01 | VERSIÓN: 02</p>
+        </header>
+
+        <div class="section">
+            <h3>📍 Información de la Situación de Emergencia</h3>
+            <div class="row">
+                <div class="column"><label for="evento">TIPO DE EVENTO/INCIDENTE:</label><input type="text" id="evento" name="evento" placeholder="Ej: Inundación, Terremoto, Conflicto Armado" required></div>
+                <div class="column"><label for="municipio">DEPARTAMENTO / MUNICIPIO DE AFECTACIÓN:</label><input type="text" id="municipio" name="municipio" required></div>
+                <div class="column"><label for="fecha_evento">FECHA INICIO DEL EVENTO:</label><input type="date" id="fecha_evento" name="fecha_evento" required></div>
+            </div>
+            <div class="row">
+                <div class="column"><label for="folio_edan">N° DE FOLIO EDAN ASOCIADO (Para Trazabilidad CRC):</label><input type="text" id="folio_edan" name="folio_edan" placeholder="Indicar el folio del EDAN base CRC" required></div>
+                <div class="column"><label for="fecha_entrega">FECHA Y HORA DE LA ENTREGA:</label><input type="datetime-local" id="fecha_entrega" name="fecha_entrega" required></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>🧑‍🤝‍🧑 Datos del Beneficiario (Jefe de Hogar)</h3>
+            <div class="row">
+                <div class="column"><label for="nombre_receptor">NOMBRE COMPLETO DEL JEFE DE HOGAR:</label><input type="text" id="nombre_receptor" name="nombre_receptor" required></div>
+                <div class="column"><label for="n_integrantes">N° TOTAL DE INTEGRANTES DEL NÚCLEO FAMILIAR:</label><input type="number" id="n_integrantes" name="n_integrantes" min="1" required></div>
+            </div>
+            <div class="row">
+                <div class="column">
+                    <label for="tipo_documento">TIPO DE DOCUMENTO:</label>
+                    <select id="tipo_documento" name="tipo_documento" required>
+                        <option value="">Seleccione...</option>
+                        <option value="CC">Cédula de Ciudadanía (CC)</option>
+                        <option value="CE">Cédula de Extranjería (CE)</option>
+                        <option value="Pasaporte">Pasaporte</option>
+                        <option value="Otro">Otro (Especificar)</option>
+                    </select>
+                </div>
+                <div class="column"><label for="num_documento">NÚMERO DE DOCUMENTO:</label><input type="text" id="num_documento" name="num_documento" required></div>
+            </div>
+            <label for="direccion_afectada">DIRECCIÓN DE RESIDENCIA AFECTADA (Barrio/Vereda, Municipio):</label><input type="text" id="direccion_afectada" name="direccion_afectada">
+        </div>
+
+        <div class="section">
+            <h3>📦 Detalle de la Asistencia Humanitaria Entregada por la Cruz Roja</h3>
+            <div class="table-responsive">
+                <table class="delivery-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%;">ITEM</th>
+                            <th style="width: 55%;">DESCRIPCIÓN DEL ELEMENTO / KIT (AHE)</th>
+                            <th style="width: 20%;">UNIDAD DE MEDIDA</th>
+                            <th style="width: 20%;">CANTIDAD ENTREGADA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>KIT ALIMENTARIO BÁSICO (Para X días / Y personas)</td>
+                            <td>Unidad</td>
+                            <td><input type="number" name="cant_alim" min="0" value="0"></td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>KIT DE ASEO E HIGIENE FAMILIAR</td>
+                            <td>Unidad</td>
+                            <td><input type="number" name="cant_aseo" min="0" value="0"></td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>ELEMENTOS DE HOGAR (Cobijas, Colchonetas, Plásticos, Utensilios de cocina)</td>
+                            <td>Unidad</td>
+                            <td><input type="number" name="cant_hogar" min="0" value="0"></td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>ASISTENCIA EN ALOJAMIENTO TEMPORAL (Ej. Contribución para arriendo)</td>
+                            <td>Días / COP</td>
+                            <td><input type="text" name="cant_alojamiento" placeholder="Valor o Días"></td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>OTROS (Describir detalladamente)</td>
+                            <td>Varias</td>
+                            <td><input type="text" name="cant_otros"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="section declaration">
+            <h3>✍️ Declaración y Validacón de la Entrega</h3>
+            <p>
+                Yo, <span style="font-weight: bold;">[Nombre del Jefe de Hogar]</span>, identificado(a) con [Tipo y N° Documento], en mi calidad de Jefe de Hogar, **DECLARO BAJO GRAVEDAD DE JURAMENTO** haber recibido conforme y a satisfacción los bienes/servicios de Asistencia Humanitaria de Emergencia (AHE) aquí detallados, los cuales corresponden a las necesidades evaluadas por la Cruz Roja Colombiana. Certifico que la información proporcionada es veraz.
+            </p>
+            <div class="row">
+                <div class="column signature-col">
+                    <label>FIRMA DEL RECEPTOR (JEFE DE HOGAR)</label>
+                    <div class="signature-box">FIRMA AUTÓGRAFA</div>
+                </div>
+                <div class="column signature-col">
+                    <label for="quien_entrega_crc">NOMBRE Y CARGO DE VOLUNTARIO/FUNCIONARIO DE LA CRUZ ROJA:</label>
+                    <input type="text" id="quien_entrega_crc" name="quien_entrega_crc" placeholder="Ej. Voluntario / Coordinador Logístico">
+                    <label>FIRMA DE QUIEN ENTREGA (Cruz Roja)</label>
+                    <div class="signature-box">FIRMA</div>
+                </div>
+            </div>
+            <div style="margin-top: 20px;">
+                <label for="observaciones">OBSERVACIONES ADICIONALES (Relevantes para la entrega o seguimiento):</label>
+                <textarea id="observaciones" name="observaciones" rows="4"></textarea>
+            </div>
+        </div>
+
+        <p class="note">
+            Este documento es vital para el registro y la rendición de cuentas de la Cruz Roja Colombiana. Su diligenciamiento correcto contribuye a la transparencia y eficacia de la ayuda humanitaria.
+        </p>
+    </div>
+</body>
+</html>

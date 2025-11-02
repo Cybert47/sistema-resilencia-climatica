@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal EDAN</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* (CSS principal, es el mismo de antes) */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; }
+        h1, h2 { text-align: center; color: #0d47a1; }
+        h3 { margin-top: 30px; margin-bottom: 15px; color: #333; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        form { max-width: 900px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); overflow: hidden; }
+        fieldset { border: none; padding: 25px 30px; margin: 0; border-bottom: 1px solid #e0e0e0; }
+        fieldset:last-of-type { border-bottom: none; }
+        legend { font-size: 1.5em; font-weight: 600; color: #0d47a1; padding: 0; margin-bottom: 20px; width: 100%; border-bottom: 2px solid #f9a825; padding-bottom: 10px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .form-group label { font-weight: 500; color: #555; }
+        .form-group input[type="text"], .form-group input[type="number"], .form-group input[type="date"], .form-group select, .form-group textarea, .form-group input[type="password"] { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
+        .form-group textarea { min-height: 100px; resize: vertical; }
+        .checkbox-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+        .checkbox-item { display: flex; align-items: center; gap: 8px; }
+        .checkbox-item input[type="checkbox"] { width: 18px; height: 18px; }
+        .table-like { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.95em; }
+        .table-like th, .table-like td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        .table-like th { background-color: #f2f2f2; }
+        .table-like input, .table-like select { width: 100%; box-sizing: border-box; padding: 8px; font-size: 0.95em; }
+        .needs-table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+        .needs-table th, .needs-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        .needs-table th { background-color: #f9f9f9; font-weight: 600; }
+        .needs-table textarea { width: 100%; min-height: 60px; box-sizing: border-box; padding: 8px; }
+        .needs-table input[type="number"] { width: 100%; box-sizing: border-box; padding: 8px; }
+        .submit-button { display: block; width: calc(100% - 60px); margin: 30px; padding: 15px; font-size: 1.2em; font-weight: 600; color: #fff; background-color: #1565c0; border: none; border-radius: 6px; cursor: pointer; transition: background-color 0.3s ease; }
+        .submit-button:hover { background-color: #0d47a1; }
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.8); display: none; justify-content: center; align-items: center; z-index: 1000; font-size: 1.5em; color: #0d47a1; font-weight: 600; }
+        
+        /* --- Estilos del Login Gate --- */
+        #login-gate-view { max-width: 500px; margin: 40px auto; padding: 30px; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        #login-gate-view h2 { text-align: center; margin-top: 0; }
+        #login-gate-form { display: flex; flex-direction: column; gap: 15px; }
+        #login-gate-form input { padding: 12px; font-size: 1rem; border: 1px solid #ccc; border-radius: 6px; }
+        #login-gate-form button { padding: 12px; font-size: 1.1rem; background-color: #1565c0; color: white; border: none; border-radius: 6px; cursor: pointer; }
+        #login-gate-error { color: #d32f2f; text-align: center; margin-top: 10px; }
+
+        /* --- Estilos del Admin --- */
+        #app-container { max-width: 1000px; margin: 20px auto; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        #admin-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 30px; border-bottom: 1px solid #eee; }
+        #admin-header h1 { margin: 0; }
+        #logout-button { background-color: #d32f2f; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
+        #report-list { padding: 30px; display: flex; flex-direction: column; gap: 15px; }
+        .report-item { border: 1px solid #ddd; border-radius: 8px; padding: 20px; }
+        .report-item-header { display: flex; justify-content: space-between; align-items: center; }
+        .report-item-header h3 { margin: 0; color: #0d47a1; }
+        .report-item-header span { font-weight: 600; padding: 5px 10px; border-radius: 15px; color: white; font-size: 0.9em; }
+        .report-item-header span.status-pendiente { background-color: #f57c00; } /* Naranja */
+        .report-item-header span.status-aceptado { background-color: #388e3c; } /* Verde */
+        .report-item-header span.status-rechazado { background-color: #d32f2f; } /* Rojo */
+        .report-item-body { margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.95em; }
+        .report-item-body p { margin: 5px 0; }
+        .report-item-body p strong { color: #555; }
+        
+        .report-item-actions { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .report-item-actions button { border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn-details { background-color: #0277bd; color: white; }
+        .btn-accept { background-color: #388e3c; color: white; }
+        .btn-reject { background-color: #f57c00; color: white; }
+        .btn-delete { background-color: #d32f2f; color: white; }
+        .report-item-actions button:disabled { background-color: #9e9e9e; }
+
+        /* --- ¡NUEVO! ESTILOS PARA EL MODAL DE DETALLES --- */
+        #details-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none; /* Oculto por defecto */
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        #details-modal {
+            background: #fff;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+        }
+        #modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 25px;
+            border-bottom: 1px solid #eee;
+        }
+        #modal-header h2 { margin: 0; color: #0d47a1; }
+        #modal-close-btn {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #777;
+            border: none;
+            background: none;
+            cursor: pointer;
+        }
+        #modal-content {
+            padding: 25px;
+            overflow-y: auto;
+        }
+        #modal-loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.2em;
+            color: #555;
+        }
+        /* Estilos para el contenido del modal */
+        .detail-section { margin-bottom: 20px; }
+        .detail-section h4 { 
+            background: #f4f7f6; 
+            padding: 8px 12px; 
+            border-radius: 4px; 
+            color: #0d47a1;
+            margin: 0 0 10px 0;
+            border-bottom: 2px solid #f9a825;
+        }
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 15px; }
+        .detail-grid p { margin: 4px 0; font-size: 0.95em; }
+        .detail-grid p strong { color: #333; }
+        .detail-table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+        .detail-table th, .detail-table td { border: 1px solid #ddd; padding: 6px; text-align: left; }
+        .detail-table th { background-color: #f9f9f9; }
+
+        /* --- Ocultar vistas por defecto --- */
+        #formulario-view { display: none; }
+        #admin-view { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="loading-overlay">Cargando...</div>
+
+    <div id="login-gate-view">
+        <h2>Portal de Acceso EDAN</h2>
+        <form id="login-gate-form">
+            <div class="form-group">
+                <label for="access-key">Clave de Acceso Única:</label>
+                <input type="password" id="access-key" required>
+            </div>
+            <button type="submit" id="login-gate-button">Ingresar</button>
+        </form>
+        <p id="login-gate-error"></p>
+    </div>
+
+    <div id="formulario-view">
+        <h1>Formulario EDAN</h1>
+        <h2>Evaluación de Daños, Análisis de Necesidades y Riesgos Asociados</h2>
+        <form id="edan-form">
+            <fieldset>
+                <legend>Paso 1: Información General y del Evento</legend>
+                <div class="form-grid">
+                    <div class="form-group"><label for="departamento">DEPARTAMENTO:</label><input type="text" id="departamento" name="departamento" required></div>
+                    <div class="form-group"><label for="municipio">MUNICIPIO:</label><input type="text" id="municipio" name="municipio" required></div>
+                    <div class="form-group"><label for="fecha_evaluacion">Fecha de la evaluación:</label><input type="date" id="fecha_evaluacion" name="fecha_evaluacion" required></div>
+                </div>
+                <h3>Datos del Responsable (Quien diligencia)</h3>
+                <div class="form-grid">
+                    <div class="form-group"><label for="resp_nombre">Nombre:</label><input type="text" id="resp_nombre" name="resp_nombre"></div>
+                    <div class="form-group"><label for="resp_institucion">Institución:</label><input type="text" id="resp_institucion" name="resp_institucion"></div>
+                    <div class="form-group"><label for="resp_cargo">Cargo:</label><input type="text" id="resp_cargo" name="resp_cargo"></div>
+                    <div class="form-group"><label for="resp_telefono">Teléfono fijo:</label><input type="text" id="resp_telefono" name="resp_telefono"></div>
+                    <div class="form-group"><label for="resp_celular">Celular:</label><input type="text" id="resp_celular" name="resp_celular"></div>
+                </div>
+                <h3>Aprobación</h3>
+                <div class="form-grid">
+                    <div class="form-group"><label for="coord_cmgrd">Coordinador del CMGRD (Verifica):</label><input type="text" id="coord_cmgrd" name="coord_cmgrd"></div>
+                    <div class="form-group"><label for="alcalde">Alcalde (Aprueba envío):</label><input type="text" id="alcalde" name="alcalde"></div>
+                </div>
+                <h3>2.1 Tipo de Evento Generador</h3>
+                <div class="checkbox-group" id="evento-generador-group">
+                    <div class="checkbox-item"><input type="checkbox" id="ev_sismo" name="evento_tipo" value="sismo"><label for="ev_sismo">Sismo</label></div>
+                    <div class="checkbox-item"><input type="checkbox" id="ev_inundacion" name="evento_tipo" value="inundacion"><label for="ev_inundacion">Inundación</label></div>
+                    <div class="checkbox-item"><input type="checkbox" id="ev_deslizamiento" name="evento_tipo" value="deslizamiento"><label for="ev_deslizamiento">Deslizamiento</label></div>
+                    </div>
+            </fieldset>
+            <fieldset>
+                <legend>Paso 7: Finalización y Envío</legend>
+                <div class="form-group"><label for="firma_final">Firma, Nombre del Alcalde o Coordinador CMGRD:</label><input type="text" id="firma_final" name="firma_final" required></div>
+                <button type="submit" class="submit-button" id="submit-btn">Enviar Consolidado Municipal</button>
+            </fieldset>
+        </form>
+    </div>
+
+    <div id="admin-view">
+        <div id="app-container">
+            <header id="admin-header">
+                <h1>Reportes Recibidos</h1>
+                <button id="logout-button">Salir</button>
+            </header>
+            <main id="report-list">
+                </main>
+        </div>
+    </div>
+
+    <div id="details-modal-overlay">
+        <div id="details-modal">
+            <header id="modal-header">
+                <h2 id="modal-title">Detalles del Reporte</h2>
+                <button id="modal-close-btn">&times;</button>
+            </header>
+            <section id="modal-content">
+                <div id="modal-loading">
+                    Cargando detalles...
+                </div>
+                </section>
+        </div>
+    </div>
+
+
+    <script>
+        // ========= CONFIGURACIÓN DE SUPABASE =========
+        // ¡¡¡CAMBIA ESTO POR TUS PROPIAS CLAVES!!!
+        const SUPABASE_URL = 'https://tcmqkhqvrtovkjaizmhq.supabase.co/'; // Pega tu URL aquí
+        const SUPABASE_ANON_KEY = 'sb_publishable_VELPOSz6fnJwVI6hv_uqzg_ZHdSlkMR'; // Pega tu clave ANON aquí
+
+        const { createClient } = supabase;
+        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // ========= MANEJO DE VISTAS Y ESTADO =========
+        const loginGateView = document.getElementById('login-gate-view');
+        const formularioView = document.getElementById('formulario-view');
+        const adminView = document.getElementById('admin-view');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const loginGateForm = document.getElementById('login-gate-form');
+        const loginGateError = document.getElementById('login-gate-error');
+        const accessKeyInput = document.getElementById('access-key');
+        
+        // ¡NUEVO! Elementos del Modal
+        const detailsModalOverlay = document.getElementById('details-modal-overlay');
+        const modalContent = document.getElementById('modal-content');
+        const modalLoading = document.getElementById('modal-loading');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const modalTitle = document.getElementById('modal-title');
+        
+        let ADMIN_KEY = null; 
+
+        function showView(viewName) {
+            loginGateView.style.display = 'none';
+            formularioView.style.display = 'none';
+            adminView.style.display = 'none';
+
+            if (viewName === 'login') loginGateView.style.display = 'block';
+            if (viewName === 'formulario') formularioView.style.display = 'block';
+            if (viewName === 'admin') {
+                adminView.style.display = 'block';
+                loadReports(); 
+            }
+        }
+        
+        // ========= LÓGICA DEL LOGIN GATE =========
+        // (Sin cambios)
+        loginGateForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const key = accessKeyInput.value;
+            loginGateError.textContent = '';
+            loadingOverlay.style.display = 'flex';
+
+            const { data: role, error } = await _supabase.rpc('check_key_role', { key_input: key });
+
+            loadingOverlay.style.display = 'none';
+            if (error) {
+                loginGateError.textContent = 'Error al verificar la llave.';
+            } else if (role === 'submitter') {
+                showView('formulario');
+            } else if (role === 'admin') {
+                ADMIN_KEY = key; 
+                showView('admin');
+            } else {
+                loginGateError.textContent = 'Clave de acceso inválida.';
+            }
+        });
+
+        document.getElementById('logout-button').addEventListener('click', () => {
+            ADMIN_KEY = null; 
+            accessKeyInput.value = ''; 
+            showView('login'); 
+        });
+
+        // ========= LÓGICA DEL FORMULARIO (submitter) =========
+        // (Sin cambios, sigue usando la función 'submit_full_edan_report')
+        const edanForm = document.getElementById('edan-form');
+        edanForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            loadingOverlay.style.display = 'flex';
+            loadingOverlay.textContent = 'Enviando reporte...';
+            
+            try {
+                // --- 1. RECOLECTAR REPORTE PRINCIPAL ---
+                const eventosGeneradores = Array.from(document.querySelectorAll('#evento-generador-group input[type="checkbox"]:checked')).map(cb => cb.value);
+                const reportePrincipal = {
+                    departamento: document.getElementById('departamento').value,
+                    municipio: document.getElementById('municipio').value,
+                    fecha_evaluacion: document.getElementById('fecha_evaluacion').value,
+                    responsable_nombre: document.getElementById('resp_nombre').value,
+                    responsable_institucion: document.getElementById('resp_institucion').value,
+                    responsable_cargo: document.getElementById('resp_cargo').value,
+                    responsable_telefono: document.getElementById('resp_telefono').value,
+                    responsable_celular: document.getElementById('resp_celular').value,
+                    aprueba_coordinador_cmgrd: document.getElementById('coord_cmgrd').value,
+                    aprueba_alcalde: document.getElementById('alcalde').value,
+                    eventos_generadores: eventosGeneradores,
+                    desc_evento_inicial: document.getElementById('desc_evento').value,
+                    af_heridos: document.getElementById('af_heridos').value || 0,
+                    af_muertos: document.getElementById('af_muertos').value || 0,
+                    af_desaparecidos: document.getElementById('af_desaparecidos').value || 0,
+                    af_familias: document.getElementById('af_familias').value || 0,
+                    af_personas: document.getElementById('af_personas').value || 0,
+                    necesidades_prioritarias: document.getElementById('necesidades_prioritarias').value,
+                    firma_nombre_responsable: document.getElementById('firma_final').value
+                };
+                
+                // --- 2. RECOLECTAR DATOS SECUNDARIOS ---
+                // (Esta parte es idéntica a la anterior, recolectando todos los datos de las tablas)
+                const detalle_evento_data = Array.from(document.querySelectorAll('#tabla-detalle-evento tbody tr')).map(row => ({
+                    ubicacion: row.querySelector('input[name^="det_evento_ubicacion"]').value,
+                    magnitud: row.querySelector('input[name^="det_evento_magnitud"]').value,
+                    veredas_afectadas: row.querySelector('input[name^="det_evento_veredas"]').value
+                })).filter(d => d.ubicacion);
+
+                const eventos_secundarios_data = Array.from(document.querySelectorAll('#tabla-eventos-secundarios tbody tr')).map(row => ({
+                    evento: row.querySelector('input[name^="sec_evento"]').value,
+                    veredas_reportan: row.querySelector('input[name^="sec_veredas"]').value,
+                    riesgo_asociado: row.querySelector('input[name^="sec_riesgo"]').value
+                })).filter(d => d.evento);
+                
+                const salud_data = Array.from(document.querySelectorAll('#tabla-salud tbody tr')).map(row => ({
+                    nombre_instalacion: row.querySelector('input[name^="salud_nombre"]').value,
+                    afectacion_nivel: row.querySelector('select[name^="salud_afectacion"]').value,
+                    en_zona_impacto: row.querySelector('select[name^="salud_zona_impacto"]').value,
+                    acceso_vehicular: row.querySelector('select[name^="salud_acceso"]').value,
+                    servicio_emergencia_afectado: row.querySelector('select[name^="salud_emergencia"]').value
+                })).filter(d => d.nombre_instalacion);
+
+                const viviendas_data = Array.from(document.querySelectorAll('#tabla-viviendas tbody tr')).map(row => ({
+                    corregimiento_vereda: row.querySelector('input[name^="viv_vereda"]').value,
+                    urbanas_averiadas: row.querySelector('input[name^="viv_urb_ave"]').value || 0,
+                    urbanas_destruidas: row.querySelector('input[name^="viv_urb_des"]').value || 0,
+                    rurales_averiadas: row.querySelector('input[name^="viv_rur_ave"]').value || 0,
+                    rurales_destruidas: row.querySelector('input[name^="viv_rur_des"]').value || 0
+                })).filter(d => d.corregimiento_vereda);
+                
+                const edificaciones_data = Array.from(document.querySelectorAll('#tabla-edificaciones tbody tr')).map(row => ({
+                    tipo_edificacion: row.querySelector('input[name="edif_tipo"]').value,
+                    corregimientos_veredas: row.querySelector('input[name="edif_veredas"]').value,
+                    estado: row.querySelector('select[name="edif_estado"]').value
+                })).filter(d => d.corregimientos_veredas || d.estado);
+
+                const telecom_data = Array.from(document.querySelectorAll('#tabla-telecom tbody tr')).map(row => ({
+                    corregimiento_vereda: row.querySelector('input[name^="telco_vereda"]').value,
+                    telefonia_fija: row.querySelector('select[name^="telco_fija"]').value,
+                    telefonia_celular: row.querySelector('select[name^="telco_celular"]').value,
+                    internet: row.querySelector('select[name^="telco_internet"]').value,
+                    television: row.querySelector('select[name^="telco_tv"]').value,
+                    emisoras: row.querySelector('select[name^="telco_emisoras"]').value
+                })).filter(d => d.corregimiento_vereda);
+
+                const transporte_terrestre_data = Array.from(document.querySelectorAll('#tabla-transporte-terrestre tbody tr')).map(row => ({
+                    infraestructura: row.querySelector('input[name="trans_infra"]').value,
+                    estado: row.querySelector('select[name^="trans_estado"]').value,
+                    comentario: row.querySelector('input[name^="trans_comentario"]').value
+                })).filter(d => d.estado || d.comentario);
+
+                const transporte_infra_data = Array.from(document.querySelectorAll('#tabla-transporte-infra tbody tr')).map(row => ({
+                    tipo_infra: row.querySelector('input[name="infra_tipo"]').value,
+                    estado: row.querySelector('select[name^="infra_estado"]').value,
+                    descripcion: row.querySelector('input[name^="infra_desc"]').value
+                })).filter(d => d.estado || d.descripcion);
+                
+                const servicios_publicos_data = Array.from(document.querySelectorAll('#tabla-servicios-publicos tbody tr')).map(row => ({
+                    servicio: row.querySelector('input[name="serv_tipo"]').value,
+                    estado: row.querySelector('select[name^="serv_estado"]').value,
+                    familias_sin_servicio: row.querySelector('input[name^="serv_familias"]').value || 0,
+                    personas_sin_servicio: row.querySelector('input[name^="serv_personas"]').value || 0,
+                    descripcion_afectacion: row.querySelector('input[name^="serv_desc"]').value,
+                    perspectivas_recuperacion: row.querySelector('input[name^="serv_recup"]').value
+                })).filter(d => d.estado);
+
+                const agro_data = Array.from(document.querySelectorAll('#tabla-agropecuario tbody tr')).map(row => ({
+                    sector: row.querySelector('input[name="agro_sector"]').value,
+                    has_afectadas: row.querySelector('input[name^="agro_has"]').value || 0,
+                    productores_afectados: row.querySelector('input[name^="agro_prod"]').value || 0,
+                    perdida_productos: row.querySelector('input[name^="agro_per_prod"]').value,
+                    perdida_infraestructura: row.querySelector('input[name^="agro_per_infra"]').value
+                })).filter(d => parseFloat(d.has_afectadas) > 0 || parseInt(d.productores_afectados) > 0);
+
+                const industria_data = Array.from(document.querySelectorAll('#tabla-industria tbody tr')).map(row => ({
+                    actividad_economica: row.querySelector('input[name="ind_actividad"]').value,
+                    total_empresas_afectadas: row.querySelector('input[name^="ind_total_afectadas"]').value || 0,
+                    microempresas: row.querySelector('input[name^="ind_micro"]').value || 0,
+                    pequenas_empresas: row.querySelector('input[name^="ind_pequenas"]').value || 0,
+                    medianas_empresas: row.querySelector('input[name^="ind_medianas"]').value || 0,
+                    empresas: row.querySelector('input[name^="ind_empresas"]').value || 0,
+                    sector_informal: row.querySelector('input[name^="ind_informal"]').value || 0
+                })).filter(d => parseInt(d.total_empresas_afectadas) > 0);
+                
+                const necesidades_data = [];
+                document.querySelectorAll('.needs-table').forEach(table => {
+                    const seccion = table.dataset.seccion;
+                    table.querySelectorAll('tbody tr').forEach(row => {
+                        const data = {
+                            seccion: seccion,
+                            descripcion_necesidad: row.querySelector('textarea[name="needs_desc"]').value,
+                            equipos_requeridos: row.querySelector('textarea[name="needs_equipos"]').value,
+                            costo_estimado: row.querySelector('input[name^="needs_costo"]').value || 0
+                        };
+                        if(data.descripcion_necesidad) necesidades_data.push(data);
+                    });
+                });
+                
+                // --- 3. LLAMAR A LA FUNCIÓN RPC ---
+                // (Sin cambios)
+                const { data, error } = await _supabase.rpc('submit_full_edan_report', {
+                    main_report: reportePrincipal, detalle_evento_data, eventos_secundarios_data,
+                    salud_data, viviendas_data, edificaciones_data, telecom_data,
+                    transporte_terrestre_data, transporte_infra_data, servicios_publicos_data,
+                    agro_data, industria_data, necesidades_data
+                });
+
+                if (error) throw error;
+                if (data === true) {
+                    loadingOverlay.style.display = 'none';
+                    alert('¡Reporte enviado con éxito!');
+                    edanForm.reset();
+                    showView('login');
+                } else {
+                    throw new Error('La base de datos rechazó el envío.');
+                }
+
+            } catch (error) {
+                console.error('Error en el envío:', error);
+                loadingOverlay.style.display = 'none';
+                alert('Error al enviar el reporte: ' + error.message);
+            }
+        });
+
+
+        // ========= ¡NUEVO! LÓGICA DEL PANEL DE ADMIN (ACTUALIZADA) =========
+        
+        const reportList = document.getElementById('report-list');
+
+        async function loadReports() {
+            if (!ADMIN_KEY) return; 
+            reportList.innerHTML = 'Cargando reportes...';
+
+            const { data: reportes, error } = await _supabase.rpc('get_admin_reports', {
+                admin_key: ADMIN_KEY
+            });
+
+            if (error) {
+                reportList.innerHTML = 'Error al cargar reportes: ' + error.message;
+                return;
+            }
+            if (!reportes || reportes.length === 0) {
+                reportList.innerHTML = 'No hay reportes pendientes.';
+                return;
+            }
+            
+            reportList.innerHTML = '';
+            reportes.forEach(reporte => {
+                reportList.appendChild(createReportElement(reporte));
+            });
+        }
+        
+        // Función para crear el HTML de un solo reporte (ACTUALIZADA con nuevos botones)
+        function createReportElement(reporte) {
+            const item = document.createElement('div');
+            item.className = 'report-item';
+            const fecha = new Date(reporte.fecha_evaluacion).toLocaleDateString('es-CO');
+
+            // Define si los botones de acción deben estar deshabilitados
+            const isPending = reporte.status === 'pendiente';
+            const acceptDisabled = !isPending ? 'disabled' : '';
+            const rejectDisabled = !isPending ? 'disabled' : '';
+
+            item.innerHTML = `
+                <div class="report-item-header">
+                    <h3>${reporte.municipio}, ${reporte.departamento} (ID: ${reporte.id})</h3>
+                    <span class="status-${reporte.status}">${reporte.status}</span>
+                </div>
+                <div class="report-item-body">
+                    <p><strong>Fecha Reporte:</strong> ${fecha}</p>
+                    <p><strong>Responsable:</strong> ${reporte.responsable_nombre || 'N/A'}</p>
+                    <p><strong>Afectados:</strong> ${reporte.af_personas || 0} personas</p>
+                    <p><strong>Firmado por:</strong> ${reporte.firma_nombre_responsable}</p>
+                </div>
+                <div class="report-item-actions">
+                    <button class="btn-details" data-id="${reporte.id}">Ver Detalles</button>
+                    <button class="btn-accept" data-id="${reporte.id}" ${acceptDisabled}>Aceptar</button>
+                    <button class="btn-reject" data-id="${reporte.id}" ${rejectDisabled}>Rechazar</button>
+                    <button class="btn-delete" data-id="${reporte.id}">Eliminar</button>
+                </div>
+            `;
+            
+            // --- Añadir Event Listeners para los nuevos botones ---
+            
+            // Botón VER DETALLES
+            item.querySelector('.btn-details').addEventListener('click', () => {
+                showDetails(reporte.id, reporte.municipio);
+            });
+            
+            // Botón ACEPTAR
+            item.querySelector('.btn-accept').addEventListener('click', () => {
+                acceptReport(reporte.id);
+            });
+
+            // Botón RECHAZAR
+            item.querySelector('.btn-reject').addEventListener('click', () => {
+                rejectReport(reporte.id);
+            });
+
+            // Botón ELIMINAR
+            item.querySelector('.btn-delete').addEventListener('click', () => {
+                deleteReport(reporte.id);
+            });
+
+            return item;
+        }
+
+        // --- Nuevas funciones para las acciones del Admin ---
+
+        async function acceptReport(reporteId) {
+            if (!ADMIN_KEY) return;
+            const { data, error } = await _supabase.rpc('accept_admin_report', {
+                admin_key: ADMIN_KEY,
+                report_id_to_update: reporteId
+            });
+            if (error) alert('Error: ' + error.message);
+            else alert(data);
+            loadReports(); // Recarga la lista
+        }
+
+        async function rejectReport(reporteId) {
+            if (!ADMIN_KEY) return;
+            const { data, error } = await _supabase.rpc('reject_admin_report', {
+                admin_key: ADMIN_KEY,
+                report_id_to_update: reporteId
+            });
+            if (error) alert('Error: ' + error.message);
+            else alert(data);
+            loadReports(); // Recarga la lista
+        }
+
+        async function deleteReport(reporteId) {
+            if (!ADMIN_KEY) return;
+            
+            // Confirmación de seguridad
+            if (!confirm(`¿Estás seguro de que quieres ELIMINAR el reporte ID ${reporteId}?\n\nEsta acción no se puede deshacer.`)) {
+                return; // Si el usuario cancela, no hace nada
+            }
+
+            const { data, error } = await _supabase.rpc('delete_admin_report', {
+                admin_key: ADMIN_KEY,
+                report_id_to_update: reporteId
+            });
+            if (error) alert('Error: ' + error.message);
+            else alert(data);
+            loadReports(); // Recarga la lista
+        }
+
+        // --- Nuevas funciones para el MODAL (POP-UP) ---
+        
+        // Mostrar el pop-up y buscar los datos
+        async function showDetails(reporteId, municipio) {
+            if (!ADMIN_KEY) return;
+
+            detailsModalOverlay.style.display = 'flex'; // Muestra el overlay
+            modalTitle.textContent = `Detalles del Reporte (ID: ${reporteId}) - ${municipio}`;
+            modalLoading.style.display = 'block'; // Muestra el spinner
+            modalContent.innerHTML = ''; // Limpia contenido viejo
+            modalContent.appendChild(modalLoading); // Pone el spinner
+
+            // 1. Llamar a la función que creamos en el SQL
+            const { data, error } = await _supabase.rpc('get_report_details', {
+                admin_key: ADMIN_KEY,
+                report_id_input: reporteId
+            });
+
+            if (error) {
+                modalLoading.textContent = 'Error al cargar los detalles: ' + error.message;
+                return;
+            }
+
+            // 2. Ocultar el spinner
+            modalLoading.style.display = 'none';
+
+            // 3. ¡Construir el HTML con los detalles!
+            // Esta función auxiliar 'buildModalHTML' hace la magia
+            modalContent.innerHTML = buildModalHTML(data);
+        }
+
+        // Cerrar el pop-up
+        modalCloseBtn.addEventListener('click', () => {
+            detailsModalOverlay.style.display = 'none';
+        });
+        detailsModalOverlay.addEventListener('click', (e) => {
+            if (e.target === detailsModalOverlay) { // Si hace clic en el fondo gris
+                detailsModalOverlay.style.display = 'none';
+            }
+        });
+
+        // Función auxiliar para construir el HTML del modal
+        function buildModalHTML(data) {
+            if (!data || !data.reporte) return '<p>No se encontraron datos.</p>';
+
+            const r = data.reporte; // Datos del reporte principal
+            let html = '';
+
+            // --- Sección 1: Datos Generales ---
+            html += `
+                <div class="detail-section">
+                    <h4>Datos Generales y Afectación</h4>
+                    <div class="detail-grid">
+                        <p><strong>Departamento:</strong> ${r.departamento || 'N/A'}</p>
+                        <p><strong>Municipio:</strong> ${r.municipio || 'N/A'}</p>
+                        <p><strong>Fecha Evaluación:</strong> ${new Date(r.fecha_evaluacion).toLocaleDateString('es-CO')}</p>
+                        <p><strong>Responsable:</strong> ${r.responsable_nombre || 'N/A'} (${r.responsable_institucion || 'N/A'})</p>
+                        <p><strong>Firma:</strong> ${r.firma_nombre_responsable || 'N/A'}</p>
+                        <p><strong>Eventos:</strong> ${r.eventos_generadores ? r.eventos_generadores.join(', ') : 'N/A'}</p>
+                        <p><strong>Familias Afectadas:</strong> ${r.af_familias || 0}</p>
+                        <p><strong>Personas Afectadas:</strong> ${r.af_personas || 0}</p>
+                        <p><strong>Heridos:</strong> ${r.af_heridos || 0}</p>
+                        <p><strong>Muertos:</strong> ${r.af_muertos || 0}</p>
+                        <p><strong>Desaparecidos:</strong> ${r.af_desaparecidos || 0}</p>
+                    </div>
+                </div>
+            `;
+            
+            // --- Sección 2: Instalaciones de Salud (Tabla) ---
+            if (data.salud && data.salud.length > 0) {
+                html += '<div class="detail-section"><h4>Instalaciones de Salud</h4><table class="detail-table"><thead><tr><th>Instalación</th><th>Nivel</th><th>Zona Impacto?</th><th>Acceso</th><th>Emergencia Afectada?</th></tr></thead><tbody>';
+                data.salud.forEach(item => {
+                    html += `
+                        <tr>
+                            <td>${item.nombre_instalacion || 'N/A'}</td>
+                            <td>${item.afectacion_nivel || 'N/A'}</td>
+                            <td>${item.en_zona_impacto ? 'Sí' : 'No'}</td>
+                            <td>${item.acceso_vehicular || 'N/A'}</td>
+                            <td>${item.servicio_emergencia_afectado ? 'Sí' : 'No'}</td>
+                        </tr>`;
+                });
+                html += '</tbody></table></div>';
+            }
+
+            // --- Sección 3: Viviendas (Tabla) ---
+            if (data.viviendas && data.viviendas.length > 0) {
+                html += '<div class="detail-section"><h4>Viviendas Afectadas</h4><table class="detail-table"><thead><tr><th>Vereda</th><th>Urb. Averiadas</th><th>Urb. Destruidas</th><th>Rur. Averiadas</th><th>Rur. Destruidas</th></tr></thead><tbody>';
+                data.viviendas.forEach(item => {
+                    html += `
+                        <tr>
+                            <td>${item.corregimiento_vereda || 'N/A'}</td>
+                            <td>${item.urbanas_averiadas || 0}</td>
+                            <td>${item.urbanas_destruidas || 0}</td>
+                            <td>${item.rurales_averiadas || 0}</td>
+                            <td>${item.rurales_destruidas || 0}</td>
+                        </tr>`;
+                });
+                html += '</tbody></table></div>';
+            }
+            
+            // --- Sección 4: Necesidades (Tabla) ---
+            if (data.necesidades && data.necesidades.length > 0) {
+                html += '<div class="detail-section"><h4>Necesidades Reportadas</h4><table class="detail-table"><thead><tr><th>Sección</th><th>Necesidad</th><th>Equipos Requeridos</th><th>Costo Estimado</th></tr></thead><tbody>';
+                data.necesidades.forEach(item => {
+                    html += `
+                        <tr>
+                            <td>${item.seccion || 'N/A'}</td>
+                            <td>${item.descripcion_necesidad || 'N/A'}</td>
+                            <td>${item.equipos_requeridos || 'N/A'}</td>
+                            <td>$ ${new Intl.NumberFormat('es-CO').format(item.costo_estimado || 0)}</td>
+                        </tr>`;
+                });
+                html += '</tbody></table></div>';
+            }
+
+            // (Puedes seguir añadiendo más tablas para las otras secciones: agro, industria, etc.)
+
+            return html;
+        }
+
+    </script>
+</body>
+</html>
